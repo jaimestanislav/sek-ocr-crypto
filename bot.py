@@ -176,6 +176,161 @@ class CryptoBot:
                 print("No trending data available")
         else:
             print(f"✗ Failed to get trending data: {result.get('error', 'Unknown error')}")
+    
+    def get_technical_analysis(self, coin_id: str, days: int = 90) -> None:
+        """
+        Get comprehensive technical analysis for a cryptocurrency
+        
+        Args:
+            coin_id: Cryptocurrency ID
+            days: Number of days of data to analyze
+        """
+        print(f"\n{'='*60}")
+        print(f"Technical Analysis: {coin_id}")
+        print(f"{'='*60}\n")
+        
+        result = self.crypto_api.get_technical_analysis(coin_id, days=days)
+        
+        if result['success']:
+            analysis = result['analysis']
+            
+            print(f"✓ Technical analysis completed\n")
+            print(f"{'='*60}")
+            print(f"OVERALL SENTIMENT: {analysis['sentiment']}")
+            print(f"RECOMMENDATION: {analysis['recommendation']}")
+            print(f"Sentiment Score: {analysis['sentiment_score']}/100")
+            print(f"{'='*60}\n")
+            
+            # Key signals
+            if analysis['signals']:
+                print("KEY SIGNALS:")
+                for signal in analysis['signals']:
+                    print(f"  • {signal}")
+                print()
+            
+            # Trend Analysis
+            print(f"{'='*60}")
+            print("TREND ANALYSIS")
+            print(f"{'='*60}")
+            trend = analysis['indicators']['trend']
+            if trend.get('trend') not in ['unknown', 'insufficient_data']:
+                print(f"Trend: {trend['trend'].upper()}")
+                print(f"Strength: {trend['strength']}")
+                if 'percent_from_sma200' in trend:
+                    print(f"Distance from SMA 200: {trend['percent_from_sma200']:.2f}%")
+                print()
+            else:
+                print("Insufficient data for trend analysis\n")
+            
+            # Moving Average Crossover
+            print(f"{'='*60}")
+            print("MOVING AVERAGE CROSSOVER")
+            print(f"{'='*60}")
+            ma_cross = analysis['indicators']['ma_crossover']
+            print(f"Status: {ma_cross.get('signal', 'N/A')}")
+            if ma_cross.get('crossover') != 'none':
+                print(f"Type: {ma_cross.get('crossover', 'N/A').replace('_', ' ').upper()}")
+            print()
+            
+            # RSI
+            print(f"{'='*60}")
+            print("RSI (Relative Strength Index)")
+            print(f"{'='*60}")
+            rsi = analysis['indicators']['rsi']
+            if rsi.get('rsi') is not None:
+                print(f"RSI Value: {rsi['rsi']:.2f}")
+                print(f"Signal: {rsi['signal']}")
+                print(f"Interpretation: {rsi['interpretation']}")
+                print()
+            else:
+                print("Insufficient data for RSI\n")
+            
+            # MACD
+            print(f"{'='*60}")
+            print("MACD (Moving Average Convergence Divergence)")
+            print(f"{'='*60}")
+            macd = analysis['indicators']['macd']
+            if macd.get('macd') is not None:
+                print(f"MACD: {macd['macd']:.2f}")
+                print(f"Signal Line: {macd['signal_line']:.2f}")
+                print(f"Histogram: {macd['histogram']:.2f}")
+                print(f"Signal: {macd['signal']}")
+                print(f"Interpretation: {macd['interpretation']}")
+                print()
+            else:
+                print("Insufficient data for MACD\n")
+            
+            # Bollinger Bands
+            print(f"{'='*60}")
+            print("BOLLINGER BANDS")
+            print(f"{'='*60}")
+            bb = analysis['indicators']['bollinger_bands']
+            if bb.get('signal') not in ['unknown', 'insufficient_data']:
+                print(f"Upper Band: ${bb['upper_band']:,.2f}")
+                print(f"Middle Band: ${bb['middle_band']:,.2f}")
+                print(f"Lower Band: ${bb['lower_band']:,.2f}")
+                print(f"Current Price: ${bb['current_price']:,.2f}")
+                print(f"Position: {bb['position']:.2%}")
+                print(f"Signal: {bb['signal']}")
+                print(f"Interpretation: {bb['interpretation']}")
+                print()
+            else:
+                print("Insufficient data for Bollinger Bands\n")
+            
+            # Volume Analysis
+            print(f"{'='*60}")
+            print("VOLUME ANALYSIS")
+            print(f"{'='*60}")
+            volume = analysis['indicators']['volume']
+            if volume.get('signal') not in ['unknown', 'insufficient_data']:
+                print(f"Current Volume: {volume['current_volume']:,.0f}")
+                print(f"Volume MA (20): {volume['volume_ma']:,.0f}")
+                print(f"Volume Ratio: {volume['volume_ratio']:.2f}x")
+                print(f"Signal: {volume['signal']}")
+                print(f"Interpretation: {volume['interpretation']}")
+                print()
+            else:
+                print("Insufficient data for volume analysis\n")
+            
+            # Candlestick Patterns
+            print(f"{'='*60}")
+            print("CANDLESTICK PATTERNS")
+            print(f"{'='*60}")
+            patterns = analysis['indicators']['candlestick_patterns']
+            if patterns['count'] > 0:
+                print(f"Patterns Detected: {patterns['count']}")
+                for pattern, description in patterns['details'].items():
+                    print(f"  • {pattern.replace('_', ' ').title()}: {description}")
+                print()
+            else:
+                print("No significant candlestick patterns detected\n")
+            
+            # Support and Resistance
+            print(f"{'='*60}")
+            print("SUPPORT AND RESISTANCE LEVELS")
+            print(f"{'='*60}")
+            sr = analysis['indicators']['support_resistance']
+            
+            if sr['support_levels']:
+                print("Support Levels:")
+                for level in sr['support_levels']:
+                    print(f"  ${level:,.2f}")
+            else:
+                print("Support Levels: Not detected")
+            
+            if sr['resistance_levels']:
+                print("\nResistance Levels:")
+                for level in sr['resistance_levels']:
+                    print(f"  ${level:,.2f}")
+            else:
+                print("Resistance Levels: Not detected")
+            
+            print(f"\nDynamic Support (SMA 50): ${sr['dynamic_support']:,.2f}" if sr['dynamic_support'] else "\nDynamic Support: Not available")
+            print(f"Dynamic Resistance (SMA 200): ${sr['dynamic_resistance']:,.2f}" if sr['dynamic_resistance'] else "Dynamic Resistance: Not available")
+            print()
+            
+        else:
+            print(f"✗ Failed to get technical analysis: {result.get('error', 'Unknown error')}")
 
 
 def main():
@@ -197,6 +352,9 @@ Examples:
   # Get detailed market data
   python bot.py --market ethereum
   
+  # Get technical analysis
+  python bot.py --technical bitcoin --days 90
+  
   # Search for a cryptocurrency
   python bot.py --search cardano
   
@@ -214,6 +372,10 @@ Examples:
                        help='Get current price for a cryptocurrency')
     parser.add_argument('--market', metavar='COIN_ID',
                        help='Get detailed market data for a cryptocurrency')
+    parser.add_argument('--technical', metavar='COIN_ID',
+                       help='Get technical analysis for a cryptocurrency')
+    parser.add_argument('--days', type=int, default=90,
+                       help='Number of days for technical analysis (default: 90)')
     parser.add_argument('--search', metavar='QUERY',
                        help='Search for cryptocurrencies')
     parser.add_argument('--trending', action='store_true',
@@ -238,6 +400,9 @@ Examples:
     
     if args.market:
         bot.get_detailed_market_data(args.market)
+    
+    if args.technical:
+        bot.get_technical_analysis(args.technical, args.days)
     
     if args.search:
         bot.search_crypto(args.search)
