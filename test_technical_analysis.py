@@ -180,17 +180,20 @@ def test_calculate_rsi():
         
         df = ta.calculate_rsi(df)
         
-        assert 'RSI' in df.columns
+        assert 'RSI' in df.columns, "RSI column not found in DataFrame"
         
         # RSI should be between 0 and 100 for valid values
         rsi_values = df['RSI'].dropna()
         if len(rsi_values) > 0:
-            assert all((rsi_values >= 0) & (rsi_values <= 100))
+            invalid_values = rsi_values[(rsi_values < 0) | (rsi_values > 100)]
+            assert len(invalid_values) == 0, f"Found {len(invalid_values)} RSI values outside [0, 100] range"
         
         print("  ✓ PASSED: RSI calculation works correctly")
         return True
     except Exception as e:
         print(f"  ✗ FAILED: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 

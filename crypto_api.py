@@ -1,6 +1,7 @@
 """
 Cryptocurrency data fetching module
 """
+import bisect
 import requests
 from typing import Dict, List, Optional, Any
 from config import Config
@@ -327,6 +328,7 @@ class CryptoDataFetcher:
                 volumes = market_chart_result['total_volumes']
                 # Create volume lookup by timestamp
                 volume_dict = {vol[0]: vol[1] for vol in volumes}
+                volume_timestamps = sorted(volume_dict.keys())
                 
                 # Add volume to OHLC data
                 ohlcv_data = []
@@ -334,9 +336,18 @@ class CryptoDataFetcher:
                     timestamp = ohlc[0]
                     # Find closest volume data
                     volume = volume_dict.get(timestamp, 0)
-                    if volume == 0 and volume_dict:
-                        # Find closest timestamp if exact match not found
-                        closest_ts = min(volume_dict.keys(), key=lambda x: abs(x - timestamp))
+                    if volume == 0 and volume_timestamps:
+                        # Binary search for closest timestamp for O(log n) complexity
+                        idx = bisect.bisect_left(volume_timestamps, timestamp)
+                        if idx == 0:
+                            closest_ts = volume_timestamps[0]
+                        elif idx == len(volume_timestamps):
+                            closest_ts = volume_timestamps[-1]
+                        else:
+                            # Choose closer of the two adjacent timestamps
+                            before = volume_timestamps[idx - 1]
+                            after = volume_timestamps[idx]
+                            closest_ts = before if abs(timestamp - before) < abs(timestamp - after) else after
                         volume = volume_dict[closest_ts]
                     ohlcv_data.append(ohlc + [volume])
             else:

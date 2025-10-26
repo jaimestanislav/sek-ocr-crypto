@@ -25,20 +25,26 @@ class TechnicalAnalyzer:
         Returns:
             DataFrame with OHLC(V) data
         """
-        # Detect if volume is included
-        if len(ohlcv_data) > 0:
-            if len(ohlcv_data[0]) == 5:
-                # OHLC without volume
-                df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close'])
-                # Add a dummy volume column for compatibility
-                df['volume'] = 0
-            elif len(ohlcv_data[0]) == 6:
-                # OHLCV with volume
-                df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-            else:
-                raise ValueError(f"Unexpected data format: {len(ohlcv_data[0])} columns")
-        else:
+        if not ohlcv_data or len(ohlcv_data) == 0:
             raise ValueError("Empty data provided")
+        
+        # Validate data consistency - check all rows have same column count
+        first_row_len = len(ohlcv_data[0])
+        for i, row in enumerate(ohlcv_data):
+            if len(row) != first_row_len:
+                raise ValueError(f"Inconsistent data: row {i} has {len(row)} columns, expected {first_row_len}")
+        
+        # Detect if volume is included
+        if first_row_len == 5:
+            # OHLC without volume
+            df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close'])
+            # Add a dummy volume column for compatibility
+            df['volume'] = 0
+        elif first_row_len == 6:
+            # OHLCV with volume
+            df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        else:
+            raise ValueError(f"Unexpected data format: {first_row_len} columns (expected 5 or 6)")
         
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
         df.set_index('timestamp', inplace=True)
