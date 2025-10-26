@@ -8,6 +8,16 @@ Un bot de criptomonedas avanzado que utiliza la tecnología DeepSeek OCR para an
 - **Análisis de Gráficos**: Extrae tendencias, patrones y niveles de soporte/resistencia de gráficos
 - **Extracción de Precios**: Lee precios de criptomonedas desde capturas de pantalla
 - **API de Mercado**: Consulta precios en tiempo real, capitalización de mercado y volúmenes
+- **Análisis Técnico Avanzado**: Indicadores técnicos completos para análisis de mercado
+  - **Medias Móviles**: SMA y EMA para identificar tendencias
+  - **RSI**: Índice de Fuerza Relativa para detectar sobrecompra/sobreventa
+  - **MACD**: Convergencia/Divergencia de Medias Móviles
+  - **Bandas de Bollinger**: Identificación de volatilidad y niveles extremos
+  - **Análisis de Volumen**: Comparación con promedios históricos
+  - **Patrones de Velas**: Detección automática de patrones importantes
+  - **Soporte y Resistencia**: Identificación de niveles clave y dinámicos
+  - **Cruces Dorado/Muerte**: Detección de señales de trading importantes
+  - **Recomendaciones**: Análisis integral con sentimiento y recomendaciones de trading
 - **Búsqueda de Monedas**: Encuentra criptomonedas por nombre o símbolo
 - **Tendencias**: Descubre las criptomonedas más populares del momento
 
@@ -80,6 +90,16 @@ python bot.py --search cardano
 python bot.py --trending
 ```
 
+**Obtener análisis técnico completo de Bitcoin**:
+```bash
+python bot.py --technical bitcoin
+```
+
+**Análisis técnico con datos de 180 días**:
+```bash
+python bot.py --technical ethereum --days 180
+```
+
 ### Uso Programático
 
 ```python
@@ -96,6 +116,9 @@ bot.get_crypto_price('bitcoin')
 
 # Datos de mercado detallados
 bot.get_detailed_market_data('ethereum')
+
+# Análisis técnico completo
+bot.get_technical_analysis('bitcoin', days=90)
 
 # Buscar monedas
 bot.search_crypto('solana')
@@ -115,15 +138,18 @@ python examples.py
 
 ```
 sek-ocr-crypto/
-├── bot.py              # Aplicación principal del bot
-├── config.py           # Configuración y variables de entorno
-├── ocr_module.py       # Módulo de OCR con DeepSeek
-├── crypto_api.py       # Cliente API de criptomonedas
-├── examples.py         # Ejemplos de uso
-├── requirements.txt    # Dependencias de Python
-├── .env.example        # Plantilla de variables de entorno
-├── .gitignore         # Archivos a ignorar en git
-└── README.md          # Este archivo
+├── bot.py                      # Aplicación principal del bot
+├── config.py                   # Configuración y variables de entorno
+├── ocr_module.py               # Módulo de OCR con DeepSeek
+├── crypto_api.py               # Cliente API de criptomonedas
+├── technical_analysis.py       # Módulo de análisis técnico
+├── examples.py                 # Ejemplos de uso
+├── test_bot.py                 # Tests del bot
+├── test_technical_analysis.py  # Tests de análisis técnico
+├── requirements.txt            # Dependencias de Python
+├── .env.example                # Plantilla de variables de entorno
+├── .gitignore                  # Archivos a ignorar en git
+└── README.md                   # Este archivo
 ```
 
 ## Módulos 🔧
@@ -143,6 +169,15 @@ Cliente para la API de CoinGecko que proporciona:
 - Datos de mercado detallados
 - Búsqueda de criptomonedas
 - Tendencias del mercado
+- Datos OHLCV para análisis técnico
+
+### `technical_analysis.py`
+Módulo de análisis técnico avanzado que incluye:
+- Cálculo de indicadores técnicos (MA, RSI, MACD, Bollinger Bands)
+- Detección de patrones de velas
+- Identificación de niveles de soporte y resistencia
+- Análisis de volumen
+- Generación de recomendaciones basadas en múltiples indicadores
 
 ### `config.py`
 Gestión de configuración y validación de variables de entorno.
@@ -155,6 +190,64 @@ El bot puede analizar varios tipos de imágenes relacionadas con criptomonedas:
 2. **Capturas de Precios**: Extrae precios, cambios porcentuales y capitalización de mercado
 3. **Tablas de Mercado**: Lee datos tabulares de múltiples criptomonedas
 4. **Infografías**: Analiza información visual sobre criptomonedas
+
+## Análisis Técnico 📈
+
+El módulo de análisis técnico proporciona indicadores profesionales para trading:
+
+### Indicadores Implementados
+
+1. **Medias Móviles (MA)**
+   - SMA 20, 50, 200: Identifica tendencias de corto, medio y largo plazo
+   - EMA 12, 26: Para análisis MACD
+   - Detección de Cruces Dorado/Muerte (Golden/Death Cross)
+
+2. **Análisis de Tendencia**
+   - Comparación del precio actual con SMA 200
+   - Clasificación de tendencia: alcista/bajista con fuerza (débil/moderada/fuerte)
+   - Distancia porcentual desde niveles clave
+
+3. **RSI (Relative Strength Index)**
+   - Período de 14 días por defecto
+   - Detección de sobrecompra (>70) y sobreventa (<30)
+   - Señales de momentum alcista/bajista
+
+4. **MACD (Moving Average Convergence Divergence)**
+   - Configuración estándar (12, 26, 9)
+   - Detección de cruces alcistas/bajistas
+   - Histograma para análisis de momentum
+
+5. **Bandas de Bollinger**
+   - Período de 20 días, 2 desviaciones estándar
+   - Identificación de zonas de sobrecompra/sobreventa
+   - Posición del precio dentro de las bandas
+
+6. **Análisis de Volumen**
+   - Comparación con media móvil de 20 períodos
+   - Detección de volumen anormal (alto/bajo)
+   - Confirmación de movimientos de precio
+
+7. **Patrones de Velas**
+   - Doji: Indecisión del mercado
+   - Inside Bar: Consolidación
+   - Velas extremas: Movimientos fuertes alcistas/bajistas
+
+8. **Soporte y Resistencia**
+   - Niveles estáticos basados en puntos pivote
+   - Niveles dinámicos usando SMA 50 y 200
+   - Identificación automática de mínimos y máximos locales
+
+9. **Recomendación Integral**
+   - Análisis ponderado de todos los indicadores
+   - Puntuación de sentimiento (-100 a +100)
+   - Recomendación clara: STRONG BUY/BUY/WEAK BUY/HOLD/WEAK SELL/SELL/STRONG SELL
+
+### Marco de Tiempo
+
+El análisis técnico se puede realizar con diferentes períodos:
+- Corto plazo: 30 días
+- Medio plazo: 90 días (por defecto)
+- Largo plazo: 180-365 días
 
 ## API de CoinGecko 📊
 

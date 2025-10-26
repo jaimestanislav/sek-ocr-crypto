@@ -16,15 +16,30 @@ class TechnicalAnalyzer:
     
     def prepare_dataframe(self, ohlcv_data: List[List]) -> pd.DataFrame:
         """
-        Convert OHLCV data to pandas DataFrame
+        Convert OHLC(V) data to pandas DataFrame
         
         Args:
-            ohlcv_data: List of [timestamp, open, high, low, close, volume]
+            ohlcv_data: List of [timestamp, open, high, low, close] or
+                       [timestamp, open, high, low, close, volume]
             
         Returns:
-            DataFrame with OHLCV data
+            DataFrame with OHLC(V) data
         """
-        df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        # Detect if volume is included
+        if len(ohlcv_data) > 0:
+            if len(ohlcv_data[0]) == 5:
+                # OHLC without volume
+                df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close'])
+                # Add a dummy volume column for compatibility
+                df['volume'] = 0
+            elif len(ohlcv_data[0]) == 6:
+                # OHLCV with volume
+                df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            else:
+                raise ValueError(f"Unexpected data format: {len(ohlcv_data[0])} columns")
+        else:
+            raise ValueError("Empty data provided")
+        
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
         df.set_index('timestamp', inplace=True)
         

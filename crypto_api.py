@@ -319,8 +319,32 @@ class CryptoDataFetcher:
                     'error': 'Insufficient data for technical analysis'
                 }
             
+            # Get volume data from market_chart endpoint
+            market_chart_result = self.get_market_chart(coin_id, vs_currency, days)
+            
+            # Merge volume data if available
+            if market_chart_result['success'] and market_chart_result.get('total_volumes'):
+                volumes = market_chart_result['total_volumes']
+                # Create volume lookup by timestamp
+                volume_dict = {vol[0]: vol[1] for vol in volumes}
+                
+                # Add volume to OHLC data
+                ohlcv_data = []
+                for ohlc in ohlc_data:
+                    timestamp = ohlc[0]
+                    # Find closest volume data
+                    volume = volume_dict.get(timestamp, 0)
+                    if volume == 0 and volume_dict:
+                        # Find closest timestamp if exact match not found
+                        closest_ts = min(volume_dict.keys(), key=lambda x: abs(x - timestamp))
+                        volume = volume_dict[closest_ts]
+                    ohlcv_data.append(ohlc + [volume])
+            else:
+                # No volume data available, use OHLC only
+                ohlcv_data = ohlc_data
+            
             # Convert to DataFrame
-            df = self.ta.prepare_dataframe(ohlc_data)
+            df = self.ta.prepare_dataframe(ohlcv_data)
             
             # Perform comprehensive analysis
             analysis = self.ta.comprehensive_analysis(df)
