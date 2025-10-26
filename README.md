@@ -100,6 +100,56 @@ python bot.py --technical bitcoin
 python bot.py --technical ethereum --days 180
 ```
 
+### Análisis en Tiempo Real con DEBUG 🔍
+
+El script `latest_analysis.py` proporciona un análisis rápido con información técnica detallada en formato DEBUG.
+
+**Uso básico**:
+```bash
+python latest_analysis.py bitcoin
+```
+
+**Con más datos históricos (recomendado para SMA 200)**:
+```bash
+python latest_analysis.py ethereum --days 250
+```
+
+**Ejemplo de salida**:
+```
+--- DEBUG: Latest Row Data ---
+open           118700.691887
+high           118791.929738
+low            117494.145643
+close          118700.691887
+SMA_50         114980.102802
+SMA_200        102706.514495
+RSI_14             53.791814
+MACD            1853.802289
+MACD_hist         86.695951
+MACD_signal     1767.106338
+BB_lower       111059.883039
+BB_upper       123752.233052
+Name: 2025-10-25 02:40:56, dtype: float64
+--------------------------------
+Latest Analysis for bitcoin:
+--- Price & Moving Averages ---
+Latest Close Price: $118700.69
+Trend: Bullish - Price is above both SMA 50 and SMA 200.
+
+--- Oscillators ---
+RSI (14): 53.79
+RSI Status: Neutral (30-70).
+MACD (1853.80) | Signal (1767.11) | Histogram (86.70)
+MACD Status: Bullish momentum.
+
+--- Volatility ---
+Bollinger Bands: Upper=$123752.23, Lower=$111059.88
+BB Status: Price is within the bands.
+
+[Strategy]:
+BUY - Multiple bullish indicators suggest an upward trend.
+```
+
 ### Uso Programático
 
 ```python
@@ -139,6 +189,7 @@ python examples.py
 ```
 sek-ocr-crypto/
 ├── bot.py                      # Aplicación principal del bot
+├── latest_analysis.py          # Script de análisis en tiempo real con DEBUG
 ├── config.py                   # Configuración y variables de entorno
 ├── ocr_module.py               # Módulo de OCR con DeepSeek
 ├── crypto_api.py               # Cliente API de criptomonedas
@@ -156,6 +207,17 @@ sek-ocr-crypto/
 
 ### `bot.py`
 Aplicación principal que integra todos los módulos y proporciona interfaz de línea de comandos.
+
+### `latest_analysis.py`
+Script dedicado para análisis en tiempo real con información DEBUG detallada que muestra:
+- Datos de la última vela OHLC (Open, High, Low, Close)
+- Indicadores técnicos actuales (SMA 50/200, RSI, MACD, Bollinger Bands)
+- Análisis de tendencia basado en medias móviles
+- Estado de osciladores (RSI, MACD)
+- Análisis de volatilidad (Bandas de Bollinger)
+- Recomendación de estrategia (BUY/SELL/HOLD)
+
+Este script es ideal para obtener un snapshot rápido del estado técnico de una criptomoneda con información detallada de depuración.
 
 ### `ocr_module.py`
 Maneja la integración con DeepSeek OCR para:
