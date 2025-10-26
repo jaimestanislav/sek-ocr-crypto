@@ -4,6 +4,7 @@ Cryptocurrency data fetching module
 import requests
 from typing import Dict, List, Optional, Any
 from config import Config
+from technical_analysis import TechnicalAnalyzer
 
 
 class CryptoDataFetcher:
@@ -22,6 +23,7 @@ class CryptoDataFetcher:
             'Accept': 'application/json',
             'User-Agent': 'DeepSeek-OCR-Crypto-Bot/1.0'
         })
+        self.ta = TechnicalAnalyzer()
     
     def get_price(self, coin_id: str, vs_currency: str = 'usd') -> Dict[str, Any]:
         """
@@ -204,6 +206,134 @@ class CryptoDataFetcher:
             }
                 
         except requests.RequestException as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def get_ohlc_data(self, coin_id: str, vs_currency: str = 'usd', days: int = 30) -> Dict[str, Any]:
+        """
+        Get OHLC (Open, High, Low, Close) data for a cryptocurrency
+        
+        Args:
+            coin_id: Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
+            vs_currency: Currency to compare against (default: 'usd')
+            days: Number of days of data (1, 7, 14, 30, 90, 180, 365, max)
+            
+        Returns:
+            Dictionary with OHLC data
+        """
+        try:
+            url = f"{self.api_url}/coins/{coin_id}/ohlc"
+            params = {
+                'vs_currency': vs_currency,
+                'days': days
+            }
+            
+            response = self.session.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            
+            ohlc_data = response.json()
+            
+            return {
+                'success': True,
+                'coin': coin_id,
+                'vs_currency': vs_currency,
+                'days': days,
+                'data': ohlc_data
+            }
+                
+        except requests.RequestException as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def get_market_chart(self, coin_id: str, vs_currency: str = 'usd', days: int = 30) -> Dict[str, Any]:
+        """
+        Get historical market data including price, market cap, and volume
+        
+        Args:
+            coin_id: Cryptocurrency ID
+            vs_currency: Currency to compare against (default: 'usd')
+            days: Number of days (1, 7, 14, 30, 90, 180, 365, max)
+            
+        Returns:
+            Dictionary with market chart data
+        """
+        try:
+            url = f"{self.api_url}/coins/{coin_id}/market_chart"
+            params = {
+                'vs_currency': vs_currency,
+                'days': days
+            }
+            
+            response = self.session.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            return {
+                'success': True,
+                'coin': coin_id,
+                'vs_currency': vs_currency,
+                'days': days,
+                'prices': data.get('prices', []),
+                'market_caps': data.get('market_caps', []),
+                'total_volumes': data.get('total_volumes', [])
+            }
+                
+        except requests.RequestException as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def get_technical_analysis(self, coin_id: str, vs_currency: str = 'usd', days: int = 90) -> Dict[str, Any]:
+        """
+        Get comprehensive technical analysis for a cryptocurrency
+        
+        Args:
+            coin_id: Cryptocurrency ID
+            vs_currency: Currency to compare against (default: 'usd')
+            days: Number of days of data to analyze (default: 90)
+            
+        Returns:
+            Dictionary with complete technical analysis
+        """
+        try:
+            # Get OHLC data
+            ohlc_result = self.get_ohlc_data(coin_id, vs_currency, days)
+            
+            if not ohlc_result['success']:
+                return {
+                    'success': False,
+                    'error': 'Failed to fetch OHLC data: ' + ohlc_result.get('error', 'Unknown error')
+                }
+            
+            ohlc_data = ohlc_result['data']
+            
+            if not ohlc_data or len(ohlc_data) < 20:
+                return {
+                    'success': False,
+                    'error': 'Insufficient data for technical analysis'
+                }
+            
+            # Convert to DataFrame
+            df = self.ta.prepare_dataframe(ohlc_data)
+            
+            # Perform comprehensive analysis
+            analysis = self.ta.comprehensive_analysis(df)
+            
+            return {
+                'success': True,
+                'coin': coin_id,
+                'vs_currency': vs_currency,
+                'days': days,
+                'analysis': analysis
+            }
+                
+        except Exception as e:
             return {
                 'success': False,
                 'error': str(e)
